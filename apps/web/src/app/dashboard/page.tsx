@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import PublicToggle from "@/components/PublicToggle";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,7 @@ export default async function Dashboard() {
             <tr className="bg-gray-800/50 border-b border-white/10 text-sm font-medium text-gray-400">
               <th className="px-6 py-4">Short ID</th>
               <th className="px-6 py-4">Source Website</th>
+              <th className="px-6 py-4">Visibility</th>
               <th className="px-6 py-4">Date Created</th>
               <th className="px-6 py-4 text-right">Action</th>
             </tr>
@@ -41,7 +43,7 @@ export default async function Dashboard() {
           <tbody className="divide-y divide-white/5">
             {keys.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                   No UI Keys found. Start extracting to see them here!
                 </td>
               </tr>
@@ -54,6 +56,9 @@ export default async function Dashboard() {
                     </Link>
                   </td>
                   <td className="px-6 py-4 text-gray-300">Extracted UI Component</td>
+                  <td className="px-6 py-4">
+                    <PublicToggle id={row.id} initialIsPublic={row.isPublic} />
+                  </td>
                   <td className="px-6 py-4 text-gray-400">{row.createdAt.toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-right">
                     <button className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium text-gray-300 rounded-lg transition-colors">
