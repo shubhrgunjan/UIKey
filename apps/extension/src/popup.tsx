@@ -6,12 +6,24 @@ function IndexPopup() {
   const [key, setKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const handleExtract = () => {
+  const handleExtract = async () => {
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      if (tab?.id) {
+        const response = await chrome.tabs.sendMessage(tab.id, { action: "EXTRACT_UI" })
+        if (response?.success) {
+          setKey(response.uiKey)
+        } else {
+          setKey("error: extraction failed")
+        }
+      }
+    } catch (error) {
+      console.error("Extraction error:", error)
+      setKey("error: extraction failed")
+    } finally {
       setLoading(false)
-      setKey("uikey.dev/k/x8f9a2")
-    }, 1500) // Dummy loading state
+    }
   }
 
   const handleCopy = () => {
