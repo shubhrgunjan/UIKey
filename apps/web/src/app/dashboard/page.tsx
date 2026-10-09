@@ -1,7 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    redirect('/api/auth/signin');
+  }
+
   const mockData = [
     { id: '8f92a2', source: 'stripe.com/pricing', date: '2026-10-09' },
     { id: 'b3a4f1', source: 'github.com/dashboard', date: '2026-10-08' },
