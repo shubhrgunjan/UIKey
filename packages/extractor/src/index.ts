@@ -75,3 +75,6 @@ export function extractDOM(rootNode: HTMLElement): ExtractedNode {
 
   return nodeData;
 }
+
+export * from './compiler';
+export * from './formatter';
