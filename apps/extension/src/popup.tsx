@@ -35,7 +35,7 @@ function IndexPopup() {
   }
 
   return (
-    <div className="plasmo-flex plasmo-flex-col plasmo-items-center plasmo-w-64 plasmo-p-6 plasmo-bg-white plasmo-font-sans">
+    <div className="plasmo-flex plasmo-flex-col plasmo-items-center plasmo-w-96 plasmo-p-6 plasmo-bg-white plasmo-font-sans">
       <h1 className="plasmo-text-2xl plasmo-font-bold plasmo-mb-6 plasmo-text-slate-800">UIKey</h1>
       
       {!loading && !key && (
@@ -56,11 +56,9 @@ function IndexPopup() {
 
       {key && (
         <div className="plasmo-w-full plasmo-flex plasmo-flex-col plasmo-gap-4">
-          <div className="plasmo-p-3 plasmo-bg-slate-50 plasmo-rounded-lg plasmo-border plasmo-border-slate-200">
-            <p className="plasmo-text-center plasmo-font-mono plasmo-text-sm plasmo-text-slate-700">
-              {key}
-            </p>
-          </div>
+          <pre className="plasmo-w-full plasmo-max-h-64 plasmo-overflow-auto plasmo-p-3 plasmo-bg-slate-50 plasmo-rounded-lg plasmo-border plasmo-border-slate-200 plasmo-text-xs plasmo-font-mono plasmo-text-slate-700">
+            {key}
+          </pre>
           <button
             onClick={handleCopy}
             className="plasmo-w-full plasmo-py-2.5 plasmo-px-4 plasmo-bg-slate-800 hover:plasmo-bg-slate-900 plasmo-text-white plasmo-font-medium plasmo-rounded-lg plasmo-transition-colors plasmo-shadow-sm"
