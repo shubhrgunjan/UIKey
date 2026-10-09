@@ -1,0 +1,15 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model UIComponent {
+  id        String   @id @default(cuid())
+  shortId   String   @unique
+  payload   String
+  createdAt DateTime @default(now())
+}
