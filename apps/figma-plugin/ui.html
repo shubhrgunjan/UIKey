@@ -4,13 +4,47 @@
     <style>
         body { font-family: sans-serif; padding: 20px; text-align: center; }
         button { padding: 10px 20px; background: #18A0FB; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        #result { margin-top: 15px; display: none; }
+        a { color: #18A0FB; text-decoration: none; }
     </style>
 </head>
 <body>
     <button id="export">Export Frame to UIKey</button>
+    <div id="result">
+        <a id="link" href="#" target="_blank">View on UIKey</a>
+        <button id="copy" style="margin-left: 10px;">Copy Link</button>
+    </div>
     <script>
         document.getElementById('export').onclick = () => {
             parent.postMessage({ pluginMessage: { type: 'export' } }, '*');
+        };
+
+        window.onmessage = async (event) => {
+            const msg = event.data.pluginMessage;
+            if (msg.type === 'payload') {
+                try {
+                    const res = await fetch('http://localhost:3000/api/ingest', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(msg.payload)
+                    });
+                    const data = await res.json();
+                    if (data.url) {
+                        document.getElementById('result').style.display = 'block';
+                        document.getElementById('link').href = data.url;
+                        document.getElementById('copy').onclick = () => {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = data.url;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("copy");
+                            textArea.remove();
+                        };
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
         };
     </script>
 </body>
