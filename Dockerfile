@@ -18,3 +18,4 @@ COPY --from=builder /app /app
 WORKDIR /app/apps/web
 EXPOSE 3000
 CMD ["pnpm", "start"]
+# Enterprise Self-Hosting Configuration
