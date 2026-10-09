@@ -3,11 +3,54 @@ import { ExtractedNode } from './index';
 export interface DesignSystem {
   colors: Record<string, string>;
   fonts: Record<string, string>;
+  animations: string[];
+  themes: {
+    light: Record<string, string>;
+    dark: Record<string, string>;
+  };
+}
+
+export function extractAnimations(node: any): string[] {
+  const classes: string[] = [];
+  if (node && node.styles) {
+    const transition = node.styles.transition;
+    if (transition && transition !== 'none' && transition !== '') {
+      classes.push('transition-all');
+      classes.push('duration-300');
+    }
+    const animation = node.styles.animation;
+    if (animation && animation !== 'none' && animation !== '') {
+      classes.push('animate-pulse');
+    }
+  }
+  return classes;
+}
+
+export function extractTheme(doc: any): { light: Record<string, string>, dark: Record<string, string> } {
+  const light: Record<string, string> = {};
+  const dark: Record<string, string> = {};
+  
+  // Checks for dark mode CSS variables
+  if (doc && doc.styleSheets) {
+    try {
+      for (const sheet of doc.styleSheets) {
+        for (const rule of sheet.cssRules) {
+          if (rule.type === 1 && rule.selectorText === ':root') {
+            // Extract variables
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore cross-origin stylesheet errors
+    }
+  }
+  return { light, dark };
 }
 
 export function generateDesignTokens(uiTree: ExtractedNode): DesignSystem {
   const colorSet = new Set<string>();
   const fontSet = new Set<string>();
+  const animationsSet = new Set<string>();
 
   function traverse(node: ExtractedNode) {
     if (node.styles) {
@@ -20,6 +63,11 @@ export function generateDesignTokens(uiTree: ExtractedNode): DesignSystem {
       if (node.styles.fontSize) {
         fontSet.add(node.styles.fontSize);
       }
+      
+      const anims = extractAnimations(node);
+      for (const a of anims) {
+        animationsSet.add(a);
+      }
     }
     
     if (node.children) {
@@ -31,9 +79,14 @@ export function generateDesignTokens(uiTree: ExtractedNode): DesignSystem {
 
   traverse(uiTree);
 
+  // In a real browser environment, doc would be document
+  const doc = typeof document !== 'undefined' ? document : null;
+
   const designSystem: DesignSystem = {
     colors: {},
-    fonts: {}
+    fonts: {},
+    animations: Array.from(animationsSet),
+    themes: extractTheme(doc)
   };
 
   let colorIndex = 1;
