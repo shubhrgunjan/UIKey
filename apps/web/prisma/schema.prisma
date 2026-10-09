@@ -12,5 +12,6 @@ model UIComponent {
   shortId   String   @unique
   payload   String
   userId    String?
+  isPublic  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
