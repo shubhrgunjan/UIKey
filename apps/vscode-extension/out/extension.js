@@ -24,6 +24,14 @@ function activate(context) {
                     }
                     const contextPath = path.join(uikeyDir, 'context.md');
                     fs.writeFileSync(contextPath, markdown);
+                    const cursorRulesPath = path.join(workspacePath, '.cursorrules');
+                    const cursorRuleText = '\n\nAlways follow the design system and UI rules defined in .uikey/context.md';
+                    if (fs.existsSync(cursorRulesPath)) {
+                        fs.appendFileSync(cursorRulesPath, cursorRuleText);
+                    }
+                    else {
+                        fs.writeFileSync(cursorRulesPath, cursorRuleText.trim());
+                    }
                     vscode.window.showInformationMessage(`UIKey context written to .uikey/context.md`);
                 }
                 else {
