@@ -1,10 +1,48 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.extractAnimations = extractAnimations;
+exports.extractTheme = extractTheme;
 exports.generateDesignTokens = generateDesignTokens;
 exports.sanitizeDOMTree = sanitizeDOMTree;
+function extractAnimations(node) {
+    const classes = [];
+    if (node && node.styles) {
+        const transition = node.styles.transition;
+        if (transition && transition !== 'none' && transition !== '') {
+            classes.push('transition-all');
+            classes.push('duration-300');
+        }
+        const animation = node.styles.animation;
+        if (animation && animation !== 'none' && animation !== '') {
+            classes.push('animate-pulse');
+        }
+    }
+    return classes;
+}
+function extractTheme(doc) {
+    const light = {};
+    const dark = {};
+    // Checks for dark mode CSS variables
+    if (doc && doc.styleSheets) {
+        try {
+            for (const sheet of doc.styleSheets) {
+                for (const rule of sheet.cssRules) {
+                    if (rule.type === 1 && rule.selectorText === ':root') {
+                        // Extract variables
+                    }
+                }
+            }
+        }
+        catch (e) {
+            // Ignore cross-origin stylesheet errors
+        }
+    }
+    return { light, dark };
+}
 function generateDesignTokens(uiTree) {
     const colorSet = new Set();
     const fontSet = new Set();
+    const animationsSet = new Set();
     function traverse(node) {
         if (node.styles) {
             if (node.styles.color) {
@@ -16,6 +54,10 @@ function generateDesignTokens(uiTree) {
             if (node.styles.fontSize) {
                 fontSet.add(node.styles.fontSize);
             }
+            const anims = extractAnimations(node);
+            for (const a of anims) {
+                animationsSet.add(a);
+            }
         }
         if (node.children) {
             for (let i = 0; i < node.children.length; i++) {
@@ -24,9 +66,13 @@ function generateDesignTokens(uiTree) {
         }
     }
     traverse(uiTree);
+    // In a real browser environment, doc would be document
+    const doc = typeof document !== 'undefined' ? document : null;
     const designSystem = {
         colors: {},
-        fonts: {}
+        fonts: {},
+        animations: Array.from(animationsSet),
+        themes: extractTheme(doc)
     };
     let colorIndex = 1;
     for (const color of colorSet) {

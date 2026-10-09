@@ -17,6 +17,23 @@ function generateAIPrompt(designSystem, sanitizedTree) {
         prompt += `- ${key}: ${value}\n`;
         reverseFontMap[value] = key;
     }
+    if (designSystem.themes) {
+        prompt += `\n# Themes (Light/Dark)\n`;
+        prompt += `## Light Mode\n`;
+        for (const [key, value] of Object.entries(designSystem.themes.light || {})) {
+            prompt += `- ${key}: ${value}\n`;
+        }
+        prompt += `\n## Dark Mode\n`;
+        for (const [key, value] of Object.entries(designSystem.themes.dark || {})) {
+            prompt += `- ${key}: ${value}\n`;
+        }
+    }
+    if (designSystem.animations && designSystem.animations.length > 0) {
+        prompt += `\n# Animations & Interactions\n`;
+        for (const anim of designSystem.animations) {
+            prompt += `- ${anim}\n`;
+        }
+    }
     prompt += `\n# UI Layout\n`;
     prompt += `Use the following structure for layout context:\n\n`;
     prompt += generatePseudoJSX(sanitizedTree, 0, reverseColorMap, reverseFontMap);

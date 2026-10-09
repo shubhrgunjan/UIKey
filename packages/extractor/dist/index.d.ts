@@ -21,6 +21,12 @@ export interface ExtractedNode {
         fontSize: string;
     };
     children: ExtractedNode[];
+    accessibility?: {
+        missingAriaLabel?: boolean;
+        missingAltTag?: boolean;
+        lowContrast?: boolean;
+        issuesFound: string[];
+    };
 }
 export declare function extractDOM(rootNode: HTMLElement): ExtractedNode;
 export * from './compiler';

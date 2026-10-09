@@ -15,6 +15,39 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractDOM = extractDOM;
+function getLuminance(r, g, b) {
+    const a = [r, g, b].map(function (v) {
+        v /= 255;
+        return v <= 0.03928
+            ? v / 12.92
+            : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+}
+function parseColor(color) {
+    const match = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/);
+    if (match) {
+        return [
+            parseInt(match[1]),
+            parseInt(match[2]),
+            parseInt(match[3]),
+            match[4] ? parseFloat(match[4]) : 1
+        ];
+    }
+    return null;
+}
+function checkContrast(fg, bg) {
+    const fgColor = parseColor(fg);
+    const bgColor = parseColor(bg);
+    if (!fgColor || !bgColor)
+        return true;
+    if (bgColor[3] === 0 || fgColor[3] === 0)
+        return true;
+    const l1 = getLuminance(fgColor[0], fgColor[1], fgColor[2]);
+    const l2 = getLuminance(bgColor[0], bgColor[1], bgColor[2]);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    return ratio >= 4.5;
+}
 function extractDOM(rootNode) {
     const rect = rootNode.getBoundingClientRect();
     const computedStyle = window.getComputedStyle(rootNode);
@@ -46,6 +79,43 @@ function extractDOM(rootNode) {
         },
         children: [],
     };
+    const accessibility = {
+        issuesFound: []
+    };
+    const tagName = nodeData.tagName;
+    if (tagName === 'img') {
+        if (attributes['alt'] === undefined) {
+            accessibility.missingAltTag = true;
+            accessibility.issuesFound.push('Missing alt attribute on <img> tag');
+            nodeData.attributes['alt'] = "Repaired: missing alt";
+        }
+    }
+    const interactiveTags = ['button', 'a', 'input', 'textarea', 'select'];
+    if (interactiveTags.includes(tagName)) {
+        const hasAriaLabel = attributes['aria-label'] || attributes['aria-labelledby'] || attributes['title'];
+        if (!hasAriaLabel) {
+            let needsLabel = false;
+            if (['input', 'textarea', 'select'].includes(tagName)) {
+                needsLabel = true;
+            }
+            else if (!rootNode.textContent?.trim()) {
+                needsLabel = true;
+            }
+            if (needsLabel) {
+                accessibility.missingAriaLabel = true;
+                accessibility.issuesFound.push(`Missing ARIA label on <${tagName}> tag`);
+                nodeData.attributes['aria-label'] = `Repaired: missing aria-label for ${tagName}`;
+            }
+        }
+    }
+    const fg = computedStyle.color;
+    const bg = computedStyle.backgroundColor;
+    if (fg && bg) {
+        if (!checkContrast(fg, bg)) {
+            accessibility.lowContrast = true;
+            accessibility.issuesFound.push('Low contrast between text and background');
+        }
+    }
     if (rootNode.childNodes.length > 0) {
         let textContent = "";
         for (let i = 0; i < rootNode.childNodes.length; i++) {
@@ -61,6 +131,9 @@ function extractDOM(rootNode) {
         if (trimmedText) {
             nodeData.text = trimmedText;
         }
+    }
+    if (accessibility.issuesFound.length > 0) {
+        nodeData.accessibility = accessibility;
     }
     return nodeData;
 }

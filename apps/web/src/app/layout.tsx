@@ -37,6 +37,7 @@ export default async function RootLayout({
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium text-gray-300">
             <Link href="/#how-it-works" className="hover:text-white transition-colors">How it Works</Link>
+            <Link href="/tutorial" className="hover:text-white transition-colors">Tutorial</Link>
             <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
             <AuthButtonClient session={session} />
           </nav>
