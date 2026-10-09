@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -11,11 +12,12 @@ export default async function Dashboard() {
     redirect('/api/auth/signin');
   }
 
-  const mockData = [
-    { id: '8f92a2', source: 'stripe.com/pricing', date: '2026-10-09' },
-    { id: 'b3a4f1', source: 'github.com/dashboard', date: '2026-10-08' },
-    { id: 'c9d8e7', source: 'linear.app/features', date: '2026-10-07' },
-  ];
+  const keys = await prisma.uIComponent.findMany({
+    where: {
+      userId: session.user?.email || "unknown",
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-8 py-12">
@@ -37,22 +39,30 @@ export default async function Dashboard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {mockData.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-800/30 transition-colors">
-                <td className="px-6 py-4 text-indigo-400 font-mono">
-                  <Link href={`/k/${row.id}`} target="_blank" className="hover:underline">
-                    {row.id}
-                  </Link>
-                </td>
-                <td className="px-6 py-4 text-gray-300">{row.source}</td>
-                <td className="px-6 py-4 text-gray-400">{row.date}</td>
-                <td className="px-6 py-4 text-right">
-                  <button className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium text-gray-300 rounded-lg transition-colors">
-                    Copy AI Prompt
-                  </button>
+            {keys.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                  No UI Keys found. Start extracting to see them here!
                 </td>
               </tr>
-            ))}
+            ) : (
+              keys.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-800/30 transition-colors">
+                  <td className="px-6 py-4 text-indigo-400 font-mono">
+                    <Link href={`/k/${row.shortId}`} target="_blank" className="hover:underline">
+                      {row.shortId}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-gray-300">Extracted UI Component</td>
+                  <td className="px-6 py-4 text-gray-400">{row.createdAt.toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium text-gray-300 rounded-lg transition-colors">
+                      Copy AI Prompt
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

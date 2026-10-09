@@ -11,5 +11,6 @@ model UIComponent {
   id        String   @id @default(cuid())
   shortId   String   @unique
   payload   String
+  userId    String?
   createdAt DateTime @default(now())
 }

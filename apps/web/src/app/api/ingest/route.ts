@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 function generateShortId(length = 6) {
   return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
@@ -8,6 +10,7 @@ function generateShortId(length = 6) {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
     const payload = await req.json();
     const shortId = generateShortId(6);
 
@@ -16,6 +19,7 @@ export async function POST(req: Request) {
       data: {
         shortId,
         payload: JSON.stringify(payload),
+        userId: session?.user?.email || null,
       },
     });
 
