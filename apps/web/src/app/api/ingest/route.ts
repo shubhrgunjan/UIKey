@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { trackExtraction } from 'analytics/src/telemetry';
 
 function generateShortId(length = 6) {
   return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
@@ -22,6 +23,10 @@ export async function POST(req: Request) {
         userId: session?.user?.email || null,
       },
     });
+
+    const urlExtractedFrom = payload.url || 'unknown_url';
+    const componentCount = Array.isArray(payload) ? payload.length : 1;
+    trackExtraction(urlExtractedFrom, componentCount);
 
     return NextResponse.json({ url: `uikey.dev/k/${shortId}` });
   } catch (error) {
