@@ -30,8 +30,6 @@ figma.ui.onmessage = msg => {
     };
 
     const payload = selection.map(node => extractNodeData(node));
-    console.log("Mock JSON Payload:", JSON.stringify(payload, null, 2));
-    
-    figma.notify("Exported selected frames (check console)");
+    figma.ui.postMessage({ type: 'payload', payload });
   }
 };
